@@ -7,12 +7,12 @@
 ## Source H-1 truncated stick-breaking implementation
 ############################################################
 
-source("Helpers_Hminus1.R")
-source("expectations_Hminus1.R")
-source("update_equations_Hminus1.R")
-source("ELBO_Hminus1.R")
-source("performance_metrics_Hminus1.R")
-source("main_function_Hminus1.R")
+source("Helpers.R")
+source("expectations.R")
+source("update_equations.R")
+source("ELBO.R")
+source("performance_metrics.R")
+source("main_function.R")
 
 
 run_one_scenario1 <- function(seed,
