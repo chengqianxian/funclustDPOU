@@ -3,6 +3,18 @@
 ## Repeat Scenario 1 simulation for multiple seeds, delta = 3
 ############################################################
 
+############################################################
+## Source H-1 truncated stick-breaking implementation
+############################################################
+
+source("Helpers_Hminus1.R")
+source("expectations_Hminus1.R")
+source("update_equations_Hminus1.R")
+source("ELBO_Hminus1.R")
+source("performance_metrics_Hminus1.R")
+source("main_function_Hminus1.R")
+
+
 run_one_scenario1 <- function(seed,
                               K_true = 3,
                               H = 8,
@@ -110,11 +122,11 @@ run_one_scenario1 <- function(seed,
   
   r_init <- r_init / rowSums(r_init)
   
-  gamma_1_init <- vapply(seq_len(H), function(h) {
+  gamma_1_init <- vapply(seq_len(H - 1), function(h) {
     update_gamma_h1(r_init[, h])
   }, numeric(1))
   
-  gamma_2_init <- vapply(seq_len(H), function(h) {
+  gamma_2_init <- vapply(seq_len(H - 1), function(h) {
     update_gamma_h2(alpha, r_init, h)
   }, numeric(1))
   

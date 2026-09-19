@@ -139,13 +139,14 @@ r_init <- r_init / rowSums(r_init)
 
 ############################################################
 ## Initialize stick-breaking parameters
+## q(v_h), h = 1,...,H-1; v_H = 1
 ############################################################
 
-gamma_1_init <- vapply(seq_len(H), function(h) {
+gamma_1_init <- vapply(seq_len(H - 1), function(h) {
   update_gamma_h1(r_init[, h])
 }, numeric(1))
 
-gamma_2_init <- vapply(seq_len(H), function(h) {
+gamma_2_init <- vapply(seq_len(H - 1), function(h) {
   update_gamma_h2(alpha, r_init, h)
 }, numeric(1))
 
@@ -427,7 +428,7 @@ p_map
 ## Only show active clusters on map
 ############################################################
 
-active_threshold <- 5   # 或者你之前用的阈值，比如 5
+active_threshold <- 5   
 cluster_size <- colSums(VBEMfit_weather$r)
 active_clusters <- which(cluster_size > active_threshold)
 

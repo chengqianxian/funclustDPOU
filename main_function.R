@@ -22,6 +22,7 @@ variational_EM_DP_OU <- function(Y_list,
   n_vec <- vapply(Y_list, length, numeric(1))
   M <- length(m0)
   
+  if (H < 2) stop("The truncation level H must be at least 2.")
   if (length(B_list) != N) stop("B_list and Y_list must have the same length.")
   if (length(t_list) != N) stop("t_list and Y_list must have the same length.")
   if (ncol(B_list[[1]]) != M) stop("ncol(B_i) must equal length(m0).")
@@ -64,20 +65,21 @@ variational_EM_DP_OU <- function(Y_list,
   if (length(a_tilde) != H) stop("init$a_tilde must have length H.")
   if (length(b_tilde) != H) stop("init$b_tilde must have length H.")
   
+  # Only v_1, ..., v_{H-1} are random. The final stick is fixed at v_H = 1.
   gamma_1 <- if (!is.null(init$gamma_1)) {
     init$gamma_1
   } else {
-    vapply(seq_len(H), function(h) update_gamma_h1(r[, h]), numeric(1))
+    vapply(seq_len(H - 1), function(h) update_gamma_h1(r[, h]), numeric(1))
   }
   
   gamma_2 <- if (!is.null(init$gamma_2)) {
     init$gamma_2
   } else {
-    vapply(seq_len(H), function(h) update_gamma_h2(alpha, r, h), numeric(1))
+    vapply(seq_len(H - 1), function(h) update_gamma_h2(alpha, r, h), numeric(1))
   }
   
-  if (length(gamma_1) != H) stop("init$gamma_1 must have length H.")
-  if (length(gamma_2) != H) stop("init$gamma_2 must have length H.")
+  if (length(gamma_1) != H - 1) stop("init$gamma_1 must have length H - 1.")
+  if (length(gamma_2) != H - 1) stop("init$gamma_2 must have length H - 1.")
   
   elbo_history <- numeric(max_iter)
   delta_history <- numeric(max_iter)
@@ -155,6 +157,8 @@ variational_EM_DP_OU <- function(Y_list,
     
     E_tau_vec <- E_tau(a_tilde, b_tilde)
     E_log_tau_vec <- E_log_tau(a_tilde, b_tilde)
+    # E_log_v_vec and E_log_1_minus_v_vec have length H - 1;
+    # E_log_pi_vec has length H because pi_H is induced by v_1, ..., v_{H-1}.
     E_log_v_vec <- E_log_v(gamma_1, gamma_2)
     E_log_1_minus_v_vec <- E_log_1_minus_v(gamma_1, gamma_2)
     E_log_pi_vec <- E_log_pi(gamma_1, gamma_2)
@@ -211,10 +215,11 @@ variational_EM_DP_OU <- function(Y_list,
     }
     
     ##########################################################
-    ## Update q(v_h): gamma_1 and gamma_2
+    ## Update q(v_h): gamma_1 and gamma_2, h = 1, ..., H - 1
+    ## The final stick is fixed at v_H = 1.
     ##########################################################
     
-    for (h in seq_len(H)) {
+    for (h in seq_len(H - 1)) {
       gamma_1[h] <- update_gamma_h1(r[, h])
       gamma_2[h] <- update_gamma_h2(alpha, r, h)
     }
@@ -225,6 +230,8 @@ variational_EM_DP_OU <- function(Y_list,
     
     E_tau_vec <- E_tau(a_tilde, b_tilde)
     E_log_tau_vec <- E_log_tau(a_tilde, b_tilde)
+    # E_log_v_vec and E_log_1_minus_v_vec have length H - 1;
+    # E_log_pi_vec has length H because pi_H is induced by v_1, ..., v_{H-1}.
     E_log_v_vec <- E_log_v(gamma_1, gamma_2)
     E_log_1_minus_v_vec <- E_log_1_minus_v(gamma_1, gamma_2)
     E_log_pi_vec <- E_log_pi(gamma_1, gamma_2)

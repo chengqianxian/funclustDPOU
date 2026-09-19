@@ -71,24 +71,36 @@ E_log_1_minus_v <- function(gamma_1, gamma_2) {
 }
 
 E_log_pi <- function(gamma_1, gamma_2) {
-  H <- length(gamma_1)
+  # gamma_1 and gamma_2 correspond only to v_1, ..., v_{H-1}.
+  # The last stick is fixed at v_H = 1, so E_log_pi returns H values.
+  H_minus_1 <- length(gamma_1)
   
-  if (length(gamma_2) != H) {
+  if (length(gamma_2) != H_minus_1) {
     stop("gamma_1 and gamma_2 must have the same length.")
   }
+  if (H_minus_1 < 1) {
+    stop("gamma_1 and gamma_2 must contain the H - 1 random stick-breaking variables.")
+  }
   
+  H <- H_minus_1 + 1
   Elogv <- E_log_v(gamma_1, gamma_2)
   Elog1mv <- E_log_1_minus_v(gamma_1, gamma_2)
   
   Elogpi <- numeric(H)
   
-  for (h in 1:H) {
+  # Components h = 1, ..., H - 1:
+  # log pi_h = log v_h + sum_{ell < h} log(1 - v_ell).
+  for (h in seq_len(H_minus_1)) {
     if (h == 1) {
       Elogpi[h] <- Elogv[h]
     } else {
-      Elogpi[h] <- Elogv[h] + sum(Elog1mv[1:(h - 1)])
+      Elogpi[h] <- Elogv[h] + sum(Elog1mv[seq_len(h - 1)])
     }
   }
+  
+  # Final component: v_H = 1, hence
+  # log pi_H = sum_{ell = 1}^{H-1} log(1 - v_ell).
+  Elogpi[H] <- sum(Elog1mv)
   
   Elogpi
 }

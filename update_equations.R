@@ -169,9 +169,9 @@ update_r <- function(E_log_pi,
   return(r)
 }
 
-### for q(v_h)
+### for q(v_h), h = 1, ..., H - 1
 update_gamma_h1 <- function(r_h) {
-  # r_h: length-N vector of responsibilities for cluster h
+  # r_h: length-N vector of responsibilities for stick-breaking component h
   
   return(1 + sum(r_h))
 }
@@ -179,18 +179,19 @@ update_gamma_h1 <- function(r_h) {
 update_gamma_h2 <- function(alpha, r, h) {
   # alpha: DP concentration parameter
   # r: N x H responsibility matrix
-  # h: cluster index, 1 <= h <= H
+  # h: stick-breaking index, 1 <= h <= H - 1
   
   H <- ncol(r)
   
-  if (h < 1 || h > H) {
-    stop("h must be between 1 and ncol(r).")
+  if (H < 2) {
+    stop("The truncation level H must be at least 2.")
+  }
+  if (h < 1 || h > H - 1) {
+    stop("h must be between 1 and H - 1, where H = ncol(r).")
   }
   
-  if (h == H) {
-    return(alpha)
-  }
-  
+  # gamma_{h2} = alpha + sum_i sum_{ell > h} r_{i ell};
+  # the sum includes component H even though v_H itself is fixed at 1.
   alpha + sum(r[, (h + 1):H, drop = FALSE])
 }
 

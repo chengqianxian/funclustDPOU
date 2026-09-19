@@ -48,7 +48,12 @@ elbo_log_p_c <- function(r, E_log_pi) {
 }
 
 elbo_log_p_v <- function(alpha, E_log_1_minus_v) {
-  H <- length(E_log_1_minus_v)
+  # E_log_1_minus_v has length H - 1 because v_H = 1 is fixed.
+  H_minus_1 <- length(E_log_1_minus_v)
+  
+  if (H_minus_1 < 1) {
+    stop("E_log_1_minus_v must contain the H - 1 random stick-breaking variables.")
+  }
   
   sum(
     -lbeta(1, alpha) +
@@ -111,11 +116,14 @@ elbo_log_q_v <- function(gamma_1,
                          gamma_2,
                          E_log_v,
                          E_log_1_minus_v) {
-  H <- length(gamma_1)
+  H_minus_1 <- length(gamma_1)
   
-  if (length(gamma_2) != H) stop("gamma_2 must have same length as gamma_1.")
-  if (length(E_log_v) != H) stop("E_log_v must have same length as gamma_1.")
-  if (length(E_log_1_minus_v) != H) {
+  if (H_minus_1 < 1) {
+    stop("gamma_1 must contain the H - 1 random stick-breaking variables.")
+  }
+  if (length(gamma_2) != H_minus_1) stop("gamma_2 must have same length as gamma_1.")
+  if (length(E_log_v) != H_minus_1) stop("E_log_v must have same length as gamma_1.")
+  if (length(E_log_1_minus_v) != H_minus_1) {
     stop("E_log_1_minus_v must have same length as gamma_1.")
   }
   
